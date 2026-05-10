@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Studio JM Intelligence</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 16 10 V 26 C 16 30 12 32 8 32 M 20 32 V 10 L 28 22 L 36 10 V 32' stroke='%23C5A47E' fill='none' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <style>
+        :root { --gold: #C5A47E; --charcoal: #1A1A1A; --bg-light: #F9F9F7; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); color: var(--charcoal); }
+        
+        /* ANIMAÇÃO DE ENTRADA DO CARD */
+        .fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards; opacity: 0; transform: translateY(30px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* LOGO INTERATIVO */
+        .logo-container { text-align: center; margin-bottom: 2.5rem; cursor: default; }
+        .logo-main { transition: color 0.5s ease, letter-spacing 0.5s ease; letter-spacing: 0.3em; }
+        .logo-sub { transition: color 0.5s ease, letter-spacing 0.5s ease; letter-spacing: 0.4em; }
+        .logo-container:hover .logo-main { color: var(--gold); letter-spacing: 0.4em; }
+        .logo-container:hover .logo-sub { color: var(--charcoal); letter-spacing: 0.5em; }
+
+        /* INPUTS MINIMALISTAS */
+        .input-field {
+            width: 100%; border: none; border-bottom: 1px solid #e5e7eb; padding: 16px 0;
+            background: transparent; outline: none; font-size: 13px; font-weight: 400; transition: 0.3s ease; color: var(--charcoal);
+        }
+        .input-field:focus { border-bottom-color: var(--gold); }
+        .input-field::placeholder { color: #bbb; text-transform: uppercase; font-size: 9px; letter-spacing: 0.15em; font-weight: 600; }
+
+        /* BOTÃO PREMIUM */
+        .btn-login {
+            width: 100%; background: var(--charcoal); color: white; padding: 20px; font-size: 10px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; border: none;
+            cursor: pointer; transition: 0.4s ease; margin-top: 1rem; border-radius: 2px;
+        }
+        .btn-login:hover { background: var(--gold); transform: translateY(-2px); box-shadow: 0 15px 30px rgba(197, 164, 126, 0.2); }
+        .btn-login:disabled { opacity: 0.8; cursor: wait; transform: none; box-shadow: none; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+    
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.03]">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="black" stroke-width="1"/></pattern></defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+    </div>
+
+    <div class="bg-white p-12 md:p-16 shadow-[0_30px_60px_rgba(0,0,0,0.05)] w-full max-w-md border-t-4 border-gold relative z-10 fade-in-up">
+        
+        <div class="logo-container">
+            <h1 class="text-3xl font-extralight uppercase logo-main text-charcoal">Studio JM</h1>
+            <p class="text-[9px] uppercase text-gray-400 mt-2 logo-sub">Admin Engine</p>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 mb-10 bg-gray-50 py-4 border border-gray-100 rounded-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span class="text-[8px] font-bold uppercase tracking-[0.2em] text-gold">Acesso Exclusivo a Administradores</span>
+        </div>
+
+        <form id="loginForm" class="space-y-6">
+            <div class="relative">
+                <input type="email" id="email" placeholder="Endereço de E-mail" required class="input-field" autocomplete="email">
+            </div>
+            <div class="relative">
+                <input type="password" id="password" placeholder="Senha de Segurança" required class="input-field" autocomplete="current-password">
+            </div>
+            <button type="submit" id="btnSubmit" class="btn-login">Autenticar Acesso</button>
+        </form>
+
+        <div class="mt-12 text-center border-t border-gray-50 pt-8">
+            <a href="index.html" class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-300 hover:text-gold transition-colors flex items-center justify-center gap-2 group">
+                <span class="group-hover:-translate-x-1 transition-transform">←</span> Retornar ao Website Público
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const _supabase = supabase.createClient('https://jssymlzkdrnsftnnsbbo.supabase.co', 'sb_publishable_bL_AvHt81QkmpqKmjbx-UQ_zdbHswjg');
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Controle de estado do botão (UX Premium)
+            const btn = document.getElementById('btnSubmit');
+            const originalText = btn.innerText;
+            btn.innerText = "VERIFICANDO CREDENCIAIS...";
+            btn.disabled = true;
+
+            try {
+                // Lógica de Autenticação intacta
+                const { error } = await _supabase.auth.signInWithPassword({ 
+                    email: document.getElementById('email').value, 
+                    password: document.getElementById('password').value 
+                });
+                
+                if (error) {
+                    alert('Acesso negado. Credenciais inválidas ou não autorizadas.');
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                } else {
+                    btn.innerText = "ACESSO CONCEDIDO ✓";
+                    btn.style.backgroundColor = "var(--gold)";
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 800);
+                }
+            } catch(err) {
+                alert('Erro de conexão com o servidor de autenticação.');
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

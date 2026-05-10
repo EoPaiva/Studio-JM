@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio JM | Arquitetura e Interiores</title>
+    
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://jssymlzkdrnsftnnsbbo.supabase.co">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 16 10 V 26 C 16 30 12 32 8 32 M 20 32 V 10 L 28 22 L 36 10 V 32' stroke='%23C5A47E' fill='none' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script> 
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --olive: #7A846E; --gold: #C5A47E; --off-white: #F9F9F7; --charcoal: #1A1A1A; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--off-white); color: #4A4A48; overflow-x: hidden; opacity: 0; animation: fadeInPage 1s ease-out forwards; }
+        
+        @keyframes fadeInPage { to { opacity: 1; } }
+
+        .logo-container { cursor: pointer; }
+        .logo-main { transition: color 0.5s ease; letter-spacing: 0.4em; }
+        .logo-sub { transition: color 0.5s ease, letter-spacing: 0.5s ease; letter-spacing: 0.6em; }
+        .logo-container:hover .logo-main { color: var(--gold); }
+        .logo-container:hover .logo-sub { letter-spacing: 0.7em; color: #888; }
+        
+        .parallax-wrapper { overflow: hidden; position: relative; height: 90vh; }
+        .parallax-img { position: absolute; top: -10%; left: 0; width: 100%; height: 130%; object-fit: cover; will-change: transform; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); transition: 0.3s; }
+        
+        .swiper { width: 100%; padding: 60px 0 !important; }
+        .swiper-slide { transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); scale: 0.85; opacity: 0.4; cursor: pointer; filter: grayscale(80%); }
+        .swiper-slide-active { scale: 1; opacity: 1; filter: grayscale(0%); }
+        .project-card-img { aspect-ratio: 4/5; width: 100%; object-fit: cover; border-radius: 2px; box-shadow: 0 20px 40px -5px rgba(0,0,0,0.15); transition: 0.5s ease; }
+
+        .modal-bg { display: none; position: fixed; inset: 0; background: #fff; z-index: 9999; overflow: hidden; }
+        .modal-bg.active { display: flex; animation: fadeInModal 0.4s ease-out forwards; }
+        @keyframes fadeInModal { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        
+        .modal-container { display: flex; width: 100%; height: 100vh; flex-direction: column; }
+        @media (min-width: 768px) { .modal-container { flex-direction: row; } }
+        .modal-info { width: 100%; padding: 40px; background: #fff; overflow-y: auto; }
+        @media (min-width: 768px) { .modal-info { width: 35%; height: 100vh; border-right: 1px solid #eee; } }
+        .modal-gallery { width: 100%; padding: 20px; background: #fafafa; overflow-y: auto; scroll-behavior: smooth; }
+        @media (min-width: 768px) { .modal-gallery { width: 65%; height: 100vh; padding: 60px; } }
+
+        .notice-box { background: white; border-top: 4px solid var(--gold); transition: 0.5s; }
+        .notice-box:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(0,0,0,0.05); }
+
+        .rich-text h2 { color: var(--gold); text-transform: uppercase; margin-top: 2rem; margin-bottom: 1rem; font-weight: 500; letter-spacing: 0.1em; font-size: 0.85rem; }
+        .rich-text p { margin-bottom: 1.2rem; line-height: 1.8; color: #666; font-weight: 300; text-align: justify; }
+        .rich-text ul { list-style-type: square; padding-left: 20px; margin-bottom: 1.5rem; color: #666; font-weight: 300; }
+        .rich-text li { margin-bottom: 0.5rem; }
+        
+        footer a { transition: color 0.3s ease; }
+        footer a:hover { color: var(--gold); }
+
+        .jm-logo-path { stroke: #4A4A48; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: 0.3s ease; }
+        .logo-container:hover .jm-logo-path { stroke: var(--gold); }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.25, 1, 0.5, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; background-color: #25D366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3); z-index: 1000; transition: 0.3s ease; }
+        .whatsapp-float:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 25px rgba(37, 211, 102, 0.4); }
+
+        #mobile-menu.active { display: flex; animation: fadeInMenu 0.3s ease forwards; }
+        @keyframes fadeInMenu { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="flex justify-between items-center px-6 md:px-12 py-8 glass-nav sticky top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="flex items-center gap-4 logo-container" onclick="lenis.scrollTo('#inicio')">
+            <svg class="w-8 h-8 md:w-10 md:h-10 relative z-[60]" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <path class="jm-logo-path" d="M 16 10 V 26 C 16 30 12 32 8 32 M 20 32 V 10 L 28 22 L 36 10 V 32"/>
+            </svg>
+            <div class="flex flex-col relative z-[60]">
+                <span class="text-xl md:text-2xl font-extralight uppercase logo-main">Studio JM</span>
+                <span class="text-[7px] uppercase text-gray-400 mt-1 logo-sub">Arquitetura & Interiores</span>
+            </div>
+        </div>
+        
+        <div class="hidden md:flex items-center space-x-10 text-[10px] uppercase tracking-widest font-medium">
+            <a href="#sobre" class="hover:text-gold transition cursor-pointer" onclick="lenis.scrollTo('#sobre')">Sobre</a>
+            <a href="#projetos" class="hover:text-gold transition cursor-pointer" onclick="lenis.scrollTo('#projetos')">Projetos</a>
+            <a href="#briefing" class="text-gold hover:text-black transition cursor-pointer" onclick="lenis.scrollTo('#briefing')">Briefing</a>
+            <a href="https://wa.me/5512988478981" target="_blank" class="bg-[#7A846E] text-white px-8 py-3 hover:bg-black transition rounded-sm shadow-xl font-bold">Orçamento</a>
+            <a href="login.html" class="text-gray-300 hover:text-black transition" title="Acesso Admin">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </a>
+        </div>
+
+        <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-gray-800 focus:outline-none relative z-[60]">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path id="hamburger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <div id="mobile-menu" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[55] hidden flex-col items-center justify-center space-y-8 text-[12px] uppercase tracking-[0.3em] font-medium">
+        <a href="#inicio" onclick="toggleMobileMenu(); lenis.scrollTo('#inicio')" class="hover:text-gold transition">Início</a>
+        <a href="#sobre" onclick="toggleMobileMenu(); lenis.scrollTo('#sobre')" class="hover:text-gold transition">A Arquiteta</a>
+        <a href="#projetos" onclick="toggleMobileMenu(); lenis.scrollTo('#projetos')" class="hover:text-gold transition">Portfólio</a>
+        <a href="#briefing" onclick="toggleMobileMenu(); lenis.scrollTo('#briefing')" class="text-gold">Briefing Online</a>
+        <a href="https://wa.me/5512988478981" target="_blank" class="bg-[#7A846E] text-white px-10 py-4 mt-4 shadow-xl">Orçamento Expresso</a>
+        <a href="login.html" class="text-gray-300 mt-10"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg></a>
+    </div>
+
+    <header id="inicio" class="parallax-wrapper">
+        <img src="assets/foto_capa.png" id="hero-img" class="parallax-img" alt="Capa Studio JM" decoding="async" onerror="this.src='https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80'">
+        <div class="relative z-10 h-full flex flex-col items-center justify-center text-center text-white px-4 bg-black/30">
+            <h1 class="text-4xl md:text-7xl font-extralight mb-6 tracking-tight drop-shadow-2xl reveal">Arquitetura que inspira.</h1>
+            <p class="text-[11px] uppercase tracking-[0.7em] opacity-90 drop-shadow-md reveal" style="transition-delay: 0.2s;">Design Autoral | Studio JM</p>
+        </div>
+    </header>
+
+    <section id="sobre" class="py-32 px-6 md:px-12 max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+        <div class="relative reveal">
+            <div class="aspect-[3/4] bg-gray-100 overflow-hidden rounded-sm shadow-2xl border-[15px] border-white relative z-10">
+                 <img src="assets/fotojulia.png" loading="lazy" decoding="async" class="w-full h-full object-cover grayscale-[10%]" alt="Júlia Morais" onerror="this.src='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80'">
+            </div>
+            <div class="absolute -bottom-10 -left-10 bg-[#7A846E] w-48 h-48 -z-0 opacity-20 rounded-sm"></div>
+        </div>
+        <div class="space-y-10 reveal" style="transition-delay: 0.3s;">
+            <h2 class="text-5xl md:text-6xl font-light leading-none tracking-tight">O Olhar da<br><span class="text-gold italic font-extralight">Criadora</span></h2>
+            <p class="text-gray-500 font-light leading-relaxed text-lg text-justify">Acredito que a arquitetura deve ser um reflexo da alma de quem nela habita. Cada traço é pensado para unir a estética atemporal com a funcionalidade do dia a dia, transformando ambientes em experiências sensoriais únicas.</p>
+            <blockquote class="text-xl md:text-2xl text-gray-800 italic font-extralight border-l-4 border-gold pl-8 py-4 shadow-sm relative">
+                "Projetos que unem o rigor técnico à leveza do design contemporâneo."
+            </blockquote>
+        </div>
+    </section>
+
+    <section id="projetos" class="py-24 bg-white overflow-hidden reveal">
+        <div class="text-center mb-16 px-4">
+            <h2 class="text-[10px] uppercase tracking-[0.6em] text-gold font-bold">Trabalhos em Destaque</h2>
+            <p class="text-gray-400 text-[10px] md:text-xs mt-4 font-light italic">Dê um duplo clique na imagem para explorar o memorial técnico</p>
+        </div>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper" id="lista-projetos"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <section id="avisos" class="py-24 px-6 bg-gray-50 border-y border-gray-100 reveal">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h3 class="text-xs uppercase tracking-[0.5em] text-gold font-bold">News & Informativos</h3>
+            </div>
+            <div id="container-novidades" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <section id="briefing" class="py-32 px-6 max-w-4xl mx-auto reveal">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-light uppercase tracking-[0.3em]">Briefing Online</h2>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-gray-400 mt-4">Conte-nos sobre o seu projeto dos sonhos</p>
+        </div>
+        <form id="briefingForm" onsubmit="enviarBriefing(event)" class="bg-white p-8 md:p-16 shadow-2xl space-y-12 border border-gray-100 relative">
+            <div class="grid md:grid-cols-2 gap-10">
+                <input type="text" name="nome" placeholder="Seu Nome Completo" required class="w-full border-b border-gray-300 py-3 outline-none focus:border-gold transition-colors bg-transparent text-sm placeholder:font-light">
+                <input type="tel" name="whatsapp" placeholder="WhatsApp (com indicativo)" required class="w-full border-b border-gray-300 py-3 outline-none focus:border-gold transition-colors bg-transparent text-sm placeholder:font-light">
+            </div>
+            
+            <div class="flex flex-col p-10 border-2 border-dashed border-gray-200 rounded-sm bg-gray-50 text-center hover:bg-gray-100 transition-colors cursor-pointer" onclick="document.getElementById('fotosRef').click()">
+                <label class="text-[10px] uppercase tracking-widest text-gold font-bold mb-4 cursor-pointer">Anexar Referências (Opcional)</label>
+                <input type="file" id="fotosRef" name="fotosRef" multiple accept="image/*" class="hidden" onchange="atualizarNomeArquivos()">
+                <p id="textoArquivos" class="text-[9px] text-gray-400 font-light transition-all">Selecione fotos de inspiração para nos ajudar a compreender o seu estilo.</p>
+            </div>
+
+            <textarea name="mensagem" placeholder="Descreva brevemente o que procura para o seu espaço..." required class="w-full border-b border-gray-300 py-3 outline-none focus:border-gold transition-colors h-32 resize-none bg-transparent text-sm placeholder:font-light"></textarea>
+            <button type="submit" id="btnEnviarBriefing" class="w-full bg-[#7A846E] text-white py-6 text-[10px] font-bold uppercase tracking-[0.5em] shadow-xl hover:bg-black transition-colors outline-none">Enviar Informações</button>
+        </form>
+    </section>
+
+    <footer class="bg-[#1A1A1A] text-white pt-24 pb-12 px-6 md:px-12 border-t-4 border-gold reveal">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20 text-center md:text-left">
+                <div class="md:col-span-1 flex flex-col items-center md:items-start">
+                    <svg class="w-12 h-12 mb-6" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M 16 10 V 26 C 16 30 12 32 8 32 M 20 32 V 10 L 28 22 L 36 10 V 32"/>
+                    </svg>
+                    <span class="text-xl font-extralight logo-spacing uppercase block mb-4">Studio JM</span>
+                    <p class="text-gray-400 text-[10px] leading-relaxed font-light uppercase tracking-widest">
+                        Transformando espaços em experiências sensoriais.<br>Arquitetura com propósito e estética atemporal.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-8">Navegação</h4>
+                    <ul class="space-y-4 text-[10px] uppercase tracking-widest text-gray-400 font-light">
+                        <li><a href="#inicio" onclick="lenis.scrollTo('#inicio')">Início</a></li>
+                        <li><a href="#sobre" onclick="lenis.scrollTo('#sobre')">A Arquiteta</a></li>
+                        <li><a href="#projetos" onclick="lenis.scrollTo('#projetos')">Portfólio</a></li>
+                        <li><a href="#briefing" onclick="lenis.scrollTo('#briefing')">Briefing Online</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-8">Contato</h4>
+                    <ul class="space-y-4 text-[10px] uppercase tracking-widest text-gray-400 font-light">
+                        <li><a href="mailto:juliagraziele5@gmail.com" class="hover:text-white transition lowercase tracking-normal">juliagraziele5@gmail.com</a></li>
+                        <li><a href="https://wa.me/5512988478981" target="_blank" class="hover:text-white transition">+55 12 98847-8981</a></li>
+                        <li class="mt-4">
+                            <a href="https://maps.app.goo.gl/wJ5RHzQfW6xUfPz16" target="_blank" class="hover:text-white transition block leading-relaxed hover:underline decoration-gold underline-offset-4">
+                                Rua Euclídes Miragaia, 145<br>Centro, SJC - SP
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-[0.4em] text-gold mb-8">Social</h4>
+                    <ul class="space-y-4 text-[10px] uppercase tracking-widest text-gray-400 font-light">
+                        <li><a href="https://www.instagram.com/studiojmarquitetura_/" target="_blank" class="hover:text-white transition">Instagram</a></li>
+                        <li><a href="https://br.pinterest.com/juliagraziele5" target="_blank" class="hover:text-white transition">Pinterest</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-center">
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest">© 2026 Studio JM Arquitetura. Todos os direitos reservados.</p>
+                <div class="text-[9px] text-gray-500 uppercase tracking-widest space-x-6 flex items-center">
+                    <a href="https://upaiva.dev" target="_blank" class="hover:text-gold transition-colors">Software Architecture by Mateus Paiva</a>
+                    <span class="text-gray-600">|</span>
+                    <a href="#" class="hover:text-gray-300">Termos de Uso</a>
+                    <a href="#" class="hover:text-gray-300">Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/5512988478981" target="_blank" class="whatsapp-float" aria-label="Fale conosco no WhatsApp">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c-.003 1.396.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.886-.58-.45-.973-1.005-1.087-1.204-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.005-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+        </svg>
+    </a>
+
+    <div id="modalProjeto" class="modal-bg">
+        <button onclick="fecharProjeto()" class="fixed top-6 right-6 z-[10000] bg-black text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-2xl flex items-center justify-center font-bold hover:scale-110 transition">✕</button>
+        <div class="modal-container" id="conteudoProjeto"></div>
+    </div>
+
+    <script>
+        const _supabase = supabase.createClient('https://jssymlzkdrnsftnnsbbo.supabase.co', 'sb_publishable_bL_AvHt81QkmpqKmjbx-UQ_zdbHswjg');
+
+        const lenis = new Lenis({ duration: 1.5, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        window.addEventListener('scroll', () => {
+            const scroll = window.pageYOffset;
+            const heroImg = document.getElementById('hero-img');
+            if(heroImg) heroImg.style.transform = `translate3d(0, ${scroll * 0.35}px, 0)`;
+
+            const nav = document.getElementById('navbar');
+            if (scroll > 50) {
+                nav.classList.add('py-4'); nav.classList.remove('py-8');
+            } else {
+                nav.classList.add('py-8'); nav.classList.remove('py-4');
+            }
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight - 100) el.classList.add('active');
+            });
+        });
+        setTimeout(() => window.dispatchEvent(new Event('scroll')), 100);
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('hamburger-icon');
+            
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('active');
+                icon.setAttribute('d', 'M6 18L18 6M6 6l12 12'); 
+                document.body.style.overflow = 'hidden';
+            } else {
+                menu.classList.remove('active');
+                setTimeout(() => menu.classList.add('hidden'), 300);
+                icon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16'); 
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function atualizarNomeArquivos() {
+            const input = document.getElementById('fotosRef');
+            const texto = document.getElementById('textoArquivos');
+            if (input.files && input.files.length > 0) {
+                if (input.files.length === 1) {
+                    texto.innerHTML = `<span class="text-olive font-bold">${input.files[0].name}</span> selecionado com sucesso!`;
+                } else {
+                    texto.innerHTML = `<span class="text-olive font-bold">${input.files.length} arquivos</span> selecionados com sucesso!`;
+                }
+            } else {
+                texto.innerText = "Selecione fotos de inspiração para nos ajudar a compreender o seu estilo.";
+            }
+        }
+
+        // OTIMIZAÇÃO DE URLS DE EXEMPLO PARA PERFORMANCE NATIVA (w=800 e q=60)
+        const fallbackProjetos = [
+            { id: 'ex1', titulo: "Residência Cobogó", categoria: "Arquitetura Residencial", localizacao: "São José dos Campos, SP", area: 450, ano: 2024, imagem_capa: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=60", galeria: ["https://images.unsplash.com/photo-1613490900233-8fa9f993d0f3?auto=format&fit=crop&w=1200&q=80", "https://images.unsplash.com/photo-1600607687931-cebf004696ce?auto=format&fit=crop&w=1200&q=80"], desc_completa: "<h2>Partido Arquitetônico</h2><p>Fachada que mistura solidez do concreto com painéis ripados. Uso de cobogós permite luz filtrada.</p>" },
+            { id: 'ex2', titulo: "Living Biofílico", categoria: "Interiores", localizacao: "São Paulo, SP", area: 120, ano: 2023, imagem_capa: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=60", galeria: ["https://images.unsplash.com/photo-1593696140826-c58b021acf8b?auto=format&fit=crop&w=1200&q=80"], desc_completa: "<h2>Natureza Integrada</h2><p>Tons neutros, texturas naturais como linho e plantas de interior para purificar o ambiente.</p>" },
+            { id: 'ex3', titulo: "Casa Brisa", categoria: "Arquitetura Residencial", localizacao: "Ubatuba, SP", area: 380, ano: 2025, imagem_capa: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=60", galeria: ["https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?auto=format&fit=crop&w=1200&q=80"], desc_completa: "<h2>Litoral Minimalista</h2><p>Telhados planos, beirais longos e generosas áreas envidraçadas captam a brisa do mar.</p>" },
+            { id: 'ex4', titulo: "Suíte Master Essência", categoria: "Interiores", localizacao: "Campos do Jordão, SP", area: 45, ano: 2024, imagem_capa: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Oásis Particular</h2><p>Suíte projetada para relaxamento com banheira freestanding e acabamentos em madeira maciça.</p>" },
+            { id: 'ex5', titulo: "Cobertura Skyline", categoria: "Interiores", localizacao: "Belo Horizonte, MG", area: 190, ano: 2023, imagem_capa: "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Elegância Urbana</h2><p>Projeto focado em valorizar a vista panorâmica. Serralheria preta e cimento queimado dão o tom.</p>" },
+            { id: 'ex6', titulo: "Residência Pátio", categoria: "Arquitetura Residencial", localizacao: "Campinas, SP", area: 520, ano: 2024, imagem_capa: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Luz Natural</h2><p>Arquitetura desenhada ao redor de um pátio central verde, inundando os ambientes de luz solar.</p>" },
+            { id: 'ex7', titulo: "Café Botânico", categoria: "Comercial", localizacao: "Curitiba, PR", area: 95, ano: 2022, imagem_capa: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Comercial Sensorial</h2><p>Teto amadeirado, esquadrias amplas e paisagismo interno proporcionam um clima relaxante.</p>" },
+            { id: 'ex8', titulo: "Apartamento Átrio", categoria: "Interiores", localizacao: "Rio de Janeiro, RJ", area: 140, ano: 2025, imagem_capa: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Minimalismo Quente</h2><p>Estuque veneziano e iluminação amarelada (2700K) provam que o minimalismo pode ser extremamente aconchegante.</p>" },
+            { id: 'ex9', titulo: "Villa das Águas", categoria: "Arquitetura Residencial", localizacao: "Angra dos Reis, RJ", area: 680, ano: 2023, imagem_capa: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Alto Padrão</h2><p>Pé direito duplo na área social, pedras brutas locais e integração sem limites com a praia.</p>" },
+            { id: 'ex10', titulo: "Residência Monolito", categoria: "Arquitetura Residencial", localizacao: "Brasília, DF", area: 550, ano: 2025, imagem_capa: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=60", galeria: ["https://images.unsplash.com/photo-1600607687644-b04fd5910f59?auto=format&fit=crop&w=1200&q=80"], desc_completa: "<h2>Brutalismo Lapidado</h2><p>Estruturada inteiramente em concreto aparente moldado in loco, esta residência desafia a gravidade com seus balanços estruturais.</p>" },
+            { id: 'ex11', titulo: "Casa das Árvores", categoria: "Arquitetura Paisagística", localizacao: "Nova Lima, MG", area: 410, ano: 2023, imagem_capa: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Respeito ao Terreno</h2><p>O projeto arquitetônico foi ditado pelas árvores centenárias já existentes no lote. A casa ramifica-se em módulos conectados por passarelas de vidro.</p>" },
+            { id: 'ex12', titulo: "Loft Industrial G", categoria: "Interiores", localizacao: "Porto Alegre, PR", area: 75, ano: 2024, imagem_capa: "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=60", galeria: ["https://images.unsplash.com/photo-1588854337221-4cfb4681f215?auto=format&fit=crop&w=1200&q=80"], desc_completa: "<h2>Alma Metropolitana</h2><p>Mantivemos os tijolos maciços originais expostos e a tubulação elétrica aparente em conduletes de aço galvanizado. Paleta dominada por cinzas, pretos e couro natural.</p>" },
+            { id: 'ex13', titulo: "Clínica Lumina", categoria: "Arquitetura Comercial", localizacao: "SJC, SP", area: 220, ano: 2025, imagem_capa: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Bem-Estar em Foco</h2><p>Usamos painéis em lâmina de madeira natural clara, mármore travertino na recepção e um paisagismo interno que induz o relaxamento dos pacientes.</p>" },
+            { id: 'ex14', titulo: "Refúgio do Vale", categoria: "Arquitetura Residencial", localizacao: "Gramado, SP", area: 320, ano: 2022, imagem_capa: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&q=60", galeria: [], desc_completa: "<h2>Estilo Chalé Moderno</h2><p>Releitura da arquitetura de montanha. Estrutura metálica aparente com fechamentos em vidro duplo de alta eficiência térmica.</p>" }
+        ];
+
+        async function enviarBriefing(e) {
+            e.preventDefault(); 
+            const btn = document.getElementById('btnEnviarBriefing');
+            const form = document.getElementById('briefingForm');
+            const originalText = btn.innerText;
+            btn.innerText = "PROCESSANDO...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                const files = document.getElementById('fotosRef').files;
+                let urlsReferencia = [];
+
+                if (files.length > 0) {
+                    btn.innerText = "ENVIANDO IMAGENS...";
+                    for (let i = 0; i < files.length; i++) {
+                        const fileName = `ref-${Date.now()}-${i}.${files[i].name.split('.').pop()}`;
+                        const { data } = await _supabase.storage.from('briefings_attachments').upload(fileName, files[i]);
+                        if (data) {
+                            const { data: urlData } = _supabase.storage.from('briefings_attachments').getPublicUrl(fileName);
+                            urlsReferencia.push(urlData.publicUrl);
+                        }
+                    }
+                }
+
+                btn.innerText = "FINALIZANDO...";
+                const { error: insertError } = await _supabase.from('briefings').insert([{ nome: formData.get('nome'), whatsapp: formData.get('whatsapp'), mensagem: formData.get('mensagem'), imagens_referencia: urlsReferencia }]);
+                if (insertError) throw insertError;
+
+                alert("Briefing enviado com sucesso! A equipe do Studio JM entrará em contato em breve.");
+                form.reset();
+                document.getElementById('textoArquivos').innerText = "Selecione fotos de inspiração para nos ajudar a compreender o seu estilo.";
+                
+            } catch (err) {
+                console.error("Erro geral:", err);
+                alert("Ocorreu um erro ao enviar. Verifique a sua conexão e tente novamente.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function carregarDados() {
+            const { data: p } = await _supabase.from('projetos').select('*').eq('status_publicacao', 'publicado').order('created_at', { ascending: false });
+            const usandoFallback = (!p || p.length === 0);
+            const lista = usandoFallback ? fallbackProjetos : p;
+
+            if (lista.length > 0) {
+                document.getElementById('lista-projetos').innerHTML = lista.map(item => `
+                    <div class="swiper-slide group" ondblclick="abrirProjeto('${item.id}', ${usandoFallback})" title="Duplo clique para abrir">
+                        <div class="relative overflow-hidden">
+                            <img src="${item.imagem_capa}" class="project-card-img mb-6 group-hover:scale-105 transition duration-700" loading="lazy" decoding="async">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                <span class="text-white text-[9px] uppercase tracking-widest border border-white px-4 py-2 backdrop-blur-sm bg-black/20">Explorar Projeto</span>
+                            </div>
+                        </div>
+                        <h3 class="text-[11px] uppercase tracking-[0.2em] font-medium text-center text-gray-800">${item.titulo}</h3>
+                        <p class="text-[9px] text-gray-400 uppercase tracking-widest text-center mt-2">${item.categoria || ''}</p>
+                    </div>
+                `).join('');
+            }
+
+            new Swiper(".mySwiper", {
+                slidesPerView: 1.2, spaceBetween: 20, centeredSlides: true, loop: true,
+                speed: 1000, slideToClickedSlide: true, autoplay: { delay: 3500, disableOnInteraction: false },
+                pagination: { el: ".swiper-pagination", clickable: true },
+                breakpoints: { 640: { slidesPerView: 2, spaceBetween: 30 }, 1024: { slidesPerView: 3, spaceBetween: 50 } }
+            });
+
+            const { data: n } = await _supabase.from('novidades').select('*').order('created_at', { ascending: false });
+            if(n && n.length > 0) {
+                document.getElementById('container-novidades').innerHTML = n.map(av => `
+                    <div class="notice-box p-12 shadow-sm text-center flex flex-col h-full">
+                        <h4 class="text-[11px] font-bold uppercase text-olive mb-4 tracking-[0.2em]">${av.titulo}</h4>
+                        <div class="w-8 h-[1px] bg-gold mx-auto mb-4"></div>
+                        <p class="text-xs text-gray-500 leading-loose flex-grow">${av.conteudo}</p>
+                    </div>
+                `).join('');
+            } else {
+                 document.getElementById('container-novidades').innerHTML = `<p class="col-span-3 text-center text-gray-400 text-[10px] uppercase tracking-widest">Nenhum informativo no momento.</p>`;
+            }
+        }
+
+        async function abrirProjeto(id, isFallback = false) {
+            let p = isFallback ? fallbackProjetos.find(proj => proj.id === id) : (await _supabase.from('projetos').select('*').eq('id', id).single()).data;
+            const fotosGaleria = [p.imagem_capa, ...(p.galeria || [])].map(img => `<img src="${img}" class="w-full mb-8 shadow-md rounded-sm object-cover" loading="lazy" decoding="async" data-lenis-prevent>`).join('');
+            
+            document.getElementById('conteudoProjeto').innerHTML = `
+                <div class="modal-info" data-lenis-prevent>
+                    <div class="mb-12 mt-8 md:mt-0">
+                        <p class="text-gold text-[10px] uppercase font-bold tracking-[0.3em] mb-4">${p.categoria}</p>
+                        <h2 class="text-3xl md:text-5xl font-light uppercase tracking-tight leading-none text-gray-900">${p.titulo}</h2>
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-6 gap-x-4 mb-12 text-[10px] uppercase tracking-widest text-gray-500 border-y border-gray-100 py-6">
+                        <div><span class="block text-gray-400 mb-1">Localização</span><strong class="text-gray-800">${p.localizacao || 'N/A'}</strong></div>
+                        <div><span class="block text-gray-400 mb-1">Área do Terreno</span><strong class="text-gray-800">${p.area ? p.area + ' m²' : 'N/A'}</strong></div>
+                        <div><span class="block text-gray-400 mb-1">Ano do Projeto</span><strong class="text-gray-800">${p.ano || 'N/A'}</strong></div>
+                        <div><span class="block text-gray-400 mb-1">Fase</span><strong class="text-gray-800">${p.status_obra || 'Concluído'}</strong></div>
+                    </div>
+                    <div class="rich-text pr-4">${p.desc_completa || '<p class="text-gray-400 italic">Detalhes técnicos em breve.</p>'}</div>
+                </div>
+                <div class="modal-gallery" data-lenis-prevent>${fotosGaleria}</div>
+            `;
+            document.getElementById('modalProjeto').classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+            if (lenis) lenis.stop();
+        }
+
+        function fecharProjeto() {
+            document.getElementById('modalProjeto').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            if (lenis) lenis.start();
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
